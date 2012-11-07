@@ -205,8 +205,7 @@ public class LocalContainer implements Container {
      * @return this container
      */
     public Container delegateTo(Container container) {
-
-        return null;
-
+        delegates.add(container);
+        return this;
     }
 }
