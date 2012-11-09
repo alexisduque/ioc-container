@@ -101,34 +101,34 @@ public class LocalContainerTest {
 
     // Appears with delegation support .............................................................................. //
 
-    // @Test
-    //     public void check_delegation() {
-    //         Container mainContainer = new LocalContainer();
-    //         mainContainer
-    //                 .declare(new Binding(EchoClient.class, SomeEchoClient.class, null, NEW))
-    //                 .define("message", "hello");
-    // 
-    //         Container delegate = new LocalContainer();
-    //         delegate
-    //                 .declare(new Binding(Echo.class, SomeEcho.class, null, NEW))
-    //                 .define("prefix", "[ ")
-    //                 .define("suffix", " ]");
-    // 
-    //         mainContainer.delegateTo(delegate);
-    //         assertThat(mainContainer.hasValueDefinedFor("message"), is(true));
-    //         assertThat(mainContainer.hasValueDefinedFor("prefix"), is(false));
-    //         assertThat(delegate.hasValueDefinedFor("message"), is(false));
-    //         assertThat(delegate.hasValueDefinedFor("prefix"), is(true));
-    //         assertThat(mainContainer.hasReferenceDeclaredFor(Echo.class), is(false));
-    //         assertThat(delegate.hasReferenceDeclaredFor(Echo.class), is(true));
-    // 
-    //         try {
-    //             delegate.obtainReference(EchoClient.class);
-    //             fail("The delegate should not have a binding to EchoClient");
-    //         } catch (ContainerException ignored) {
-    //         }
-    // 
-    //         EchoClient client = mainContainer.obtainReference(EchoClient.class);
-    //         assertThat(client.run(), is("[ hello ]"));
-    //     }
+     @Test
+         public void check_delegation() {
+             Container mainContainer = new LocalContainer();
+             mainContainer
+                     .declare(new Binding(EchoClient.class, SomeEchoClient.class, null, NEW))
+                     .define("message", "hello");
+     
+             Container delegate = new LocalContainer();
+             delegate
+                     .declare(new Binding(Echo.class, SomeEcho.class, null, NEW))
+                     .define("prefix", "[ ")
+                     .define("suffix", " ]");
+     
+             mainContainer.delegateTo(delegate);
+             assertThat(mainContainer.hasValueDefinedFor("message"), is(true));
+             assertThat(mainContainer.hasValueDefinedFor("prefix"), is(false));
+             assertThat(delegate.hasValueDefinedFor("message"), is(false));
+             assertThat(delegate.hasValueDefinedFor("prefix"), is(true));
+             assertThat(mainContainer.hasReferenceDeclaredFor(Echo.class), is(false));
+             assertThat(delegate.hasReferenceDeclaredFor(Echo.class), is(true));
+     
+             try {
+                 delegate.obtainReference(EchoClient.class);
+                 fail("The delegate should not have a binding to EchoClient");
+             } catch (ContainerException ignored) {
+             }
+     
+             EchoClient client = mainContainer.obtainReference(EchoClient.class);
+             assertThat(client.run(), is("[ hello ]"));
+         }
 }
