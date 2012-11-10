@@ -96,10 +96,7 @@ public class LocalContainer implements Container {
                 Object[] parameterValue = new Object [paramType.length];
                 
                 for (int j = 0 ; j < paramType.length; j++) {
-                    String annot = qualifierNameFor(parameterAnnotations[j]);
-                    System.out.println(paramType[j]);
-                    System.out.println(annot);
-                    
+                    String annot = qualifierNameFor(parameterAnnotations[j]);    
                     if(hasReferenceDeclaredFor(paramType[j], annot)) {
                         parameterValue[j] = this.obtainReference(paramType[j], annot);
                     } else if (hasValueDefinedFor(annot)) {
@@ -111,7 +108,6 @@ public class LocalContainer implements Container {
                         parameterValue[j] = delegat.obtainReference(paramType[j], annot);
                         }
                     }
-                    System.out.println(parameterValue[j]);
                 }
                 
                 try {
