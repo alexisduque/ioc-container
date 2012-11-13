@@ -25,6 +25,24 @@ public class DistributedSessionContainer extends LocalContainer {
     private final InetAddress group;     
     private final String groupAddress;   
     private final int port;
+    private static final int BUFFER_SIZE = 8192;
+    private final byte[] incomingBuffer = new byte[BUFFER_SIZE];
+
+    private Serializable[] decode(byte[] buffer, int count) {                              
+        try {                                                                              
+            Serializable[] decoded = new Serializable[count];                              
+            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(buffer));
+            for (int i = 0; i < count; i++) {                                              
+                decoded[i] = (Serializable) in.readObject();                               
+            }                                                                              
+            in.close();                                                                    
+            return decoded;                                                                
+        } catch (IOException e) {                                                          
+            throw new ContainerException(e);                                               
+        } catch (ClassNotFoundException e) {                                               
+            throw new ContainerException(e);                                               
+        }                                                                                  
+    }    
 
     
     public DistributedSessionContainer(String groupAddress, int port) {
@@ -54,11 +72,40 @@ public class DistributedSessionContainer extends LocalContainer {
     public void stop() {                                 
     try {                               
         socket.leaveGroup(group);       
-    } catch (IOException e) {           
-        throw new ContainerException(e);
+        } catch (IOException e) {           
+            throw new ContainerException(e);
+        }
     }
-}
 
+      /**
+     * Fetch a session value.
+     *
+     * @param key key of the value
+     * @return the value, or <code>null</code> if none was found
+     */
     
-    
+    public Serializable get(String key) {
+        
+       return null;
+       
+    }
+
+    /**
+     * Remove a value
+     *
+     * @param key the key of the value to be removed
+     */
+    public void delete(String key) {
+        
+    }
+
+    /**
+     * Define or update a session value
+     *
+     * @param key   the value key
+     * @param value the value
+     */
+    public void set(String key, Serializable value) {
+    }
+        
 }
