@@ -104,8 +104,11 @@ public class LocalContainer implements Container {
                     }else{
                         
                         for (int k = 0; k < this.delegates.size(); k++) {
-                        Container delegat = this.delegates.get(k) ;
-                        parameterValue[j] = delegat.obtainReference(paramType[j], annot);
+                            Container delegat = this.delegates.get(k) ;
+                            if ( (delegat.obtainReference(paramType[j], annot)) != null) {
+                                parameterValue[j] = delegat.obtainReference(paramType[j], annot);
+                                break;
+                            }
                         }
                     }
                 }

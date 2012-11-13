@@ -28,21 +28,21 @@ import static org.junit.Assert.assertThat;
 public class DistributedSessionContainerTest {
 
     private static final int SLEEP_DELAY = 250;
-//
-//    @Test
-//    public void check_local_session() {
-//        DistributedSessionContainer container = new DistributedSessionContainer("228.5.6.7", 8666);
-//        container.start();
-//
-//        Session session = container.obtainReference(Session.class);
-//        assertThat(session.get("foo"), nullValue());
-//        session.set("foo", "bar");
-//        assertThat((String) session.get("foo"), is("bar"));
-//        session.delete("foo");
-//        assertThat(session.get("foo"), nullValue());
-//
-//        container.stop();
-//    }
+
+    @Test
+    public void check_local_session() {
+        DistributedSessionContainer container = new DistributedSessionContainer("228.5.6.7", 8666);
+        container.start();
+
+        Session session = container.obtainReference(Session.class);
+        assertThat(session.get("foo"), nullValue());
+        session.set("foo", "bar");
+        assertThat((String) session.get("foo"), is("bar"));
+        session.delete("foo");
+        assertThat(session.get("foo"), nullValue());
+
+        container.stop();
+    }
 //
 //    @Test
 //    public void check_distributed_session() throws InterruptedException {
