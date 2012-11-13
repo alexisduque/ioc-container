@@ -24,13 +24,64 @@ import static midcontainers.Binding.Policy.SINGLETON;
 
 public class DistributedSessionContainer extends LocalContainer{
     
+    private final Session mySession;
     private final MulticastSocket socket;
     private final InetAddress group;     
     private final String groupAddress;   
     private final int port;
     private static final int BUFFER_SIZE = 8192;
     private final byte[] incomingBuffer = new byte[BUFFER_SIZE];
+    private final ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream(BUFFER_SIZE);
+    enum SessionCommand {
+    SYNC, SET, DELETE
+    }
     
+    public class ListenThread extends Thread {
+
+    public void run() {
+        DatagramPacket inPacket = new DatagramPacket(incomingBuffer, incomingBuffer.length);
+        Serializable[] command = decode(inPacket.getData(), 3);
+
+        switch ((SessionCommand) command[0]) {
+            case SET:
+                (...)
+                break;
+
+            case DELETE:
+                (...)
+                break;
+
+            case SYNC:
+                (...)
+                break;
+        }
+        }
+    }
+
+
+    private byte[] encode(Serializable... objects) {                                          
+        outputBuffer.reset();                                                                 
+        try {                                                                                 
+            ObjectOutputStream out = new ObjectOutputStream(outputBuffer);                    
+            for (Serializable object : objects) {                                             
+                out.writeObject(object);                                                      
+            }                                                                                 
+            out.close();                                                                      
+            return outputBuffer.toByteArray();                                                
+        } catch (IOException e) {                                                             
+            throw new ContainerException(e);                                                  
+        }                                                                                     
+    }
+
+    private void send(SessionCommand command, String key, Serializable value) {      
+        byte[] bytes = encode(command, key, value);                                  
+        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, group, port);
+        try {                                                                        
+            socket.send(packet);                                                     
+        } catch (IOException e) {                                                    
+            throw new ContainerException(e);                                         
+        }                                                                            
+    }
 
     private Serializable[] decode(byte[] buffer, int count) {                              
         try {                                                                              
@@ -48,31 +99,32 @@ public class DistributedSessionContainer extends LocalContainer{
         }                                                                                  
     }    
 
-            public void start() {                    
-            try {                                
-             socket.joinGroup(group);         
-                } catch (IOException e) {            
-             throw new ContainerException(e); 
-            }                                    
-        }   
-    
-        public void stop() {                                 
-            try {                               
-            socket.leaveGroup(group);       
-            } catch (IOException e) {           
-                throw new ContainerException(e);
-            }
+    public void start() {                    
+    try {                                
+     socket.joinGroup(group);         
+        } catch (IOException e) {            
+     throw new ContainerException(e); 
+        }                                    
+    }      
+
+    public void stop() {                                 
+        try {                               
+        socket.leaveGroup(group);       
+        } catch (IOException e) {           
+            throw new ContainerException(e);
         }
+    }
         
     public DistributedSessionContainer(String groupAddress, int port) {
         try {       
-            
+            this.mySession = new SessionContainer();
             this.groupAddress = groupAddress;                          
             this.port = port;                                          
             this.group = InetAddress.getByName(groupAddress);          
             socket = new MulticastSocket(port);                        
             socket.setSoTimeout(10000);       
             this.declare(new Binding(Session.class, SessionContainer.class, null, SINGLETON));
+            new ListenThread().start();
             
             
         } catch (UnknownHostException e) {                             
