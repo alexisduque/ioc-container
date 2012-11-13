@@ -6,20 +6,23 @@ package midcontainers.distsession;
 
 import java.net.*;
 import java.io.*;
+import java.util.Map;
+import java.util.HashMap;
 
 import midcontainers.Binding;
 import midcontainers.Container;
 import midcontainers.ContainerException;
 import midcontainers.Named;
 import midcontainers.local.LocalContainer;
-
+import static midcontainers.Binding.Policy.NEW;
+import static midcontainers.Binding.Policy.SINGLETON;
 
 /**
  *
  * @author alexis
  */
 
-public class DistributedSessionContainer extends LocalContainer {
+public class DistributedSessionContainer extends LocalContainer{
     
     private final MulticastSocket socket;
     private final InetAddress group;     
@@ -27,6 +30,7 @@ public class DistributedSessionContainer extends LocalContainer {
     private final int port;
     private static final int BUFFER_SIZE = 8192;
     private final byte[] incomingBuffer = new byte[BUFFER_SIZE];
+    
 
     private Serializable[] decode(byte[] buffer, int count) {                              
         try {                                                                              
@@ -44,7 +48,22 @@ public class DistributedSessionContainer extends LocalContainer {
         }                                                                                  
     }    
 
+            public void start() {                    
+            try {                                
+             socket.joinGroup(group);         
+                } catch (IOException e) {            
+             throw new ContainerException(e); 
+            }                                    
+        }   
     
+        public void stop() {                                 
+            try {                               
+            socket.leaveGroup(group);       
+            } catch (IOException e) {           
+                throw new ContainerException(e);
+            }
+        }
+        
     public DistributedSessionContainer(String groupAddress, int port) {
         try {       
             
@@ -53,6 +72,8 @@ public class DistributedSessionContainer extends LocalContainer {
             this.group = InetAddress.getByName(groupAddress);          
             socket = new MulticastSocket(port);                        
             socket.setSoTimeout(10000);       
+            this.declare(new Binding(Session.class, SessionContainer.class, null, SINGLETON));
+            
             
         } catch (UnknownHostException e) {                             
             throw new ContainerException(e);                           
@@ -61,22 +82,14 @@ public class DistributedSessionContainer extends LocalContainer {
         }                                                              
     }
     
-    public void start() {                    
-    try {                                
-        socket.joinGroup(group);         
-    } catch (IOException e) {            
-        throw new ContainerException(e); 
-    }                                    
-}
     
-    public void stop() {                                 
-    try {                               
-        socket.leaveGroup(group);       
-        } catch (IOException e) {           
-            throw new ContainerException(e);
+    public class SessionContainer implements Session {
+        
+        private final Map<String, Serializable> session = new HashMap<String, Serializable>();
+        
+        public SessionContainer() {
         }
-    }
-
+        
       /**
      * Fetch a session value.
      *
@@ -84,20 +97,20 @@ public class DistributedSessionContainer extends LocalContainer {
      * @return the value, or <code>null</code> if none was found
      */
     
-    public Serializable get(String key) {
+        public Serializable get(String key) {
         
-       return null;
+        return this.session.get(key);
        
-    }
+        }
 
     /**
      * Remove a value
      *
      * @param key the key of the value to be removed
      */
-    public void delete(String key) {
-        
-    }
+        public void delete(String key) {
+            this.session.remove(key);
+        }
 
     /**
      * Define or update a session value
@@ -105,7 +118,9 @@ public class DistributedSessionContainer extends LocalContainer {
      * @param key   the value key
      * @param value the value
      */
-    public void set(String key, Serializable value) {
-    }
+        public void set(String key, Serializable value) {
+            this.session.put(key, value);
+            }
+        }
         
 }
