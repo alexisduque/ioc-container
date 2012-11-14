@@ -14,6 +14,7 @@ import java.lang.Object;
 import java.util.concurrent.atomic.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.lang.reflect.*;
 
 import midcontainers.local.LocalContainer;
 import midcontainers.ContainerException;
@@ -84,11 +85,12 @@ public class RemoteContainerServer extends LocalContainer {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             
             while (running.get()) {
-                command = (RemoteCommand) in.readObject();
+               RemoteCommand command = (RemoteCommand) in.readObject();
                 switch (command) {
 
                     case CHECK_DEFINITION:
-                        name = (String) in.readObject();
+                        
+                       String name = (String) in.readObject();
                         out.writeObject(hasValueDefinedFor(name));
                         out.flush();
                         break;
@@ -97,14 +99,14 @@ public class RemoteContainerServer extends LocalContainer {
                         // (...)
                         break;
 
-                    case RemoteContainerClient.GET_DEFINITION:
+                    case GET_DEFINITION:
                         // (...)
                         break;
 
                     case GET_REFERENCE:
                         name = (String) in.readObject();
-                        qualifier = (String) in.readObject();
-                        instance = obtainReference(Class.forName(name), qualifier);
+                        String qualifier = (String) in.readObject();
+                        Object instance = obtainReference(Class.forName(name), qualifier);
                         clientObjects.put(clientObjectsCounter, instance);
                         out.writeObject(clientObjectsCounter);
                         out.flush();
@@ -112,11 +114,11 @@ public class RemoteContainerServer extends LocalContainer {
                         break;
 
                     case INVOKE:
-                        objectId = in.readInt();
+                        int objectId = in.readInt();
                         name = (String) in.readObject();
-                        parametersCount = in.readInt();
-                        parameters = new Object[parametersCount];
-                        parameterTypes = new Class<?>[parametersCount];
+                        int parametersCount = in.readInt();
+                        Object[] parameters = new Object[parametersCount];
+                        Class<?>[] parameterTypes = new Class<?>[parametersCount];
                         for (int i = 0; i < parametersCount; i++) {
                             parameterTypes[i] = Class.forName((String) in.readObject());
                         }

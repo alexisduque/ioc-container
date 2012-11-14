@@ -17,6 +17,7 @@
 
 package midcontainers.distsession;
 
+import midcontainers.distsession.DistributedSessionContainer;
 import midcontainers.Binding;
 import midcontainers.components.Counter;
 //import midcontainers.components.InSessionCounter;

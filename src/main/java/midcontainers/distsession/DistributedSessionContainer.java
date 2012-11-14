@@ -22,7 +22,7 @@ import static midcontainers.Binding.Policy.SINGLETON;
  * @author alexis
  */
 
-public class DistributedSessionContainer extends LocalContainer{
+public class DistributedSessionContainer extends LocalContainer {
     
     private final SessionContainer mySession;
     private final MulticastSocket socket;

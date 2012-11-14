@@ -110,7 +110,7 @@ public class RemoteContainerClient implements Container {
                 public Object invoke(Object proxy, Method method, Object[] parameters) throws Throwable {
                     // TODO: la suite du protocole pour un INVOKE, en particulier lui passer objectId et le nom de méthode
                     out.writeObject(RemoteCommand.INVOKE);
-                    (...)                    
+                    //(...)                    
 
                     if (parameters == null) {
                         out.writeInt(0);
@@ -120,7 +120,7 @@ public class RemoteContainerClient implements Container {
                             out.writeObject(type.getName());
                         }
                         // TODO: ecrire les valeurs des parametres
-                        (...)
+                     
                     }
                     out.flush();
                     return in.readObject();
