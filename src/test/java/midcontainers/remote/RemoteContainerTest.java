@@ -93,24 +93,24 @@ public class RemoteContainerTest {
         server.stop();
     }
 
-//    @Test
-//    public void check_remote_operations() {
-//        RemoteContainerServer server = new RemoteContainerServer(1984);
-//        server
-//                .declare(new Binding(Echo.class, SomeEcho.class, null, NEW))
-//                .declare(new Binding(Echo.class, SomeEcho.class, "shared", SINGLETON))
-//                .define("prefix", "[ ")
-//                .define("suffix", " ]");
-//        server.start();
-//
-//        RemoteContainerClient client = new RemoteContainerClient("127.0.0.1", 1984);
-//
-//        Echo echo = client.obtainReference(Echo.class);
-//        assertThat(echo, notNullValue());
-//        assertThat(echo, not(instanceOf(SomeEcho.class)));
-//
-//        assertThat(echo.echo("hello"), is("[ hello ]"));
-//
+    @Test
+    public void check_remote_operations() {
+        RemoteContainerServer server = new RemoteContainerServer(1984);
+        server
+                .declare(new Binding(Echo.class, SomeEcho.class, null, NEW))
+                .declare(new Binding(Echo.class, SomeEcho.class, "shared", SINGLETON))
+                .define("prefix", "[ ")
+                .define("suffix", " ]");
+        server.start();
+
+        RemoteContainerClient client = new RemoteContainerClient("127.0.0.1", 1984);
+
+        Echo echo = client.obtainReference(Echo.class);
+        assertThat(echo, notNullValue());
+        assertThat(echo, not(instanceOf(SomeEcho.class)));
+        
+        assertThat(echo.echo("hello"), is("[ hello ]"));
+
 //        Echo echoShared1 = client.obtainReference(Echo.class, "shared");
 //        Echo echoShared2 = client.obtainReference(Echo.class, "shared");
 //        assertThat(echoShared1, not(sameInstance(echoShared2)));
@@ -135,9 +135,9 @@ public class RemoteContainerTest {
 //        c2.increment();
 //        assertThat(c1.get(), is(2));
 //        assertThat(c2.get(), is(1));
-//
-//        server.stop();
-//    }
+
+        server.stop();
+    }
 //
 //    @Test
 //    public void check_delegation_to_remote() {
@@ -163,3 +163,4 @@ public class RemoteContainerTest {
 //        server.stop();
 //    }
 }
+
