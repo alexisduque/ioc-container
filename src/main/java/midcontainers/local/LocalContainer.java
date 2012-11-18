@@ -82,7 +82,7 @@ public class LocalContainer implements Container {
      */
     public <T> T obtainReference(Class<T> interfaceClass, String qualifier) {
 
-        Binding bind = bindings.get(new Binding.Key(interfaceClass, qualifier));
+        Binding bind = this.bindings.get(new Binding.Key(interfaceClass, qualifier));
         if (bind == null) {
             throw new ContainerException();
         } else {
@@ -208,7 +208,7 @@ public class LocalContainer implements Container {
      * @return this container
      */
     public Container delegateTo(Container container) {
-        delegates.add(container);
+        this.delegates.add(container);
         return this;
     }
 }

@@ -101,10 +101,10 @@ public class RemoteContainerServer extends LocalContainer {
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             
             while (running.get()) {
-                System.out.println("1");
+                //System.out.println("1");
                 serverSocket.close();
                 RemoteCommand command = (RemoteCommand)in.readObject();
-                System.out.println("2");
+                //System.out.println("2");
                 switch (command) {
 
                     case CHECK_DEFINITION:

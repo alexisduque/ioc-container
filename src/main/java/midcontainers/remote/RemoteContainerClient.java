@@ -85,15 +85,16 @@ public class RemoteContainerClient implements Container {
             throw new ContainerException(e);    
         }                                       
     }
-    
+
     public <T> T obtainReference(Class<T> interfaceClass) {
         
         return this.obtainReference(interfaceClass, null);
     }
     
+
     public <T> T obtainReference(Class<T> interfaceClass, String qualifier) {
         try {
-
+             
             out.writeObject(RemoteContainerServer.RemoteCommand.GET_REFERENCE);
             out.writeObject(interfaceClass.getName());
             out.writeObject(qualifier);
@@ -129,7 +130,7 @@ public class RemoteContainerClient implements Container {
                 } 
             };
             
-            System.out.println("3");
+            //System.out.println("3");
             // Fabrique un proxy sur l'interface interfaceClass
             return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{interfaceClass}, handler);
 

@@ -138,29 +138,29 @@ public class RemoteContainerTest {
 
         server.stop();
     }
-//
-//    @Test
-//    public void check_delegation_to_remote() {
-//        RemoteContainerServer server = new RemoteContainerServer(1985);
-//        server
-//                .declare(new Binding(Counter.class, SomeCounter.class, "shared", SINGLETON))
-//                .define("prefix", "[ ")
-//                .define("suffix", " ]");
-//        server.start();
-//
-//        LocalContainer mainContainer = new LocalContainer();
-//        mainContainer
-//                .declare(new Binding(EchoCounterClient.class, SomeEchoCounterClient.class, null, NEW))
-//                .declare(new Binding(Echo.class, SomeEcho.class, null, NEW))
-//                .delegateTo(new RemoteContainerClient("127.0.0.1", 1985));
-//
-//        EchoCounterClient client = mainContainer.obtainReference(EchoCounterClient.class);
-//        assertThat(client, notNullValue());
+
+    @Test
+    public void check_delegation_to_remote() {
+        RemoteContainerServer server = new RemoteContainerServer(1985);
+        server
+                .declare(new Binding(Counter.class, SomeCounter.class, "shared", SINGLETON))
+                .define("prefix", "[ ")
+                .define("suffix", " ]");
+        server.start();
+
+        LocalContainer mainContainer = new LocalContainer();
+        mainContainer
+                .declare(new Binding(EchoCounterClient.class, SomeEchoCounterClient.class, null, NEW))
+                .declare(new Binding(Echo.class, SomeEcho.class, null, NEW))
+                .delegateTo(new RemoteContainerClient("127.0.0.1", 1985));
+System.out.println("??");
+       EchoCounterClient client = mainContainer.obtainReference(EchoCounterClient.class);
+        assertThat(client, notNullValue());
 //        assertThat(client.echoNextIncrement(), is("[ 1 ]"));
 //        assertThat(client.echoNextIncrement(), is("[ 2 ]"));
 //        assertThat(client.echoNextIncrement(), is("[ 3 ]"));
 //
-//        server.stop();
-//    }
+        server.stop();
+    }
 }
 
