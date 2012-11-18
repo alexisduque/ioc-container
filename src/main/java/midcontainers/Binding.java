@@ -113,7 +113,7 @@ public final class Binding {
     }
 
     public Key getKey() {
-        return new Key(interfaceClass, qualifier);
+        return new Key(this.interfaceClass, this.qualifier);
     }
 
     @Override

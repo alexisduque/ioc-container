@@ -152,9 +152,11 @@ public class RemoteContainerServer extends LocalContainer {
                         }
 
                         instance = clientObjects.get(objectId);
+                        clientObjects.put(clientObjectsCounter, instance);
                         Method method = instance.getClass().getMethod(name, parameterTypes);
                         out.writeObject(method.invoke(instance, parameters));
                         out.flush();
+                        clientObjectsCounter = clientObjectsCounter + 1;
                         break;
                 }
                

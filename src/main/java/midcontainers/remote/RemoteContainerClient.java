@@ -99,28 +99,37 @@ public class RemoteContainerClient implements Container {
             out.writeObject(qualifier);
             out.flush();
             final int objectId = (Integer) in.readObject();
-
             InvocationHandler handler = new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] parameters) throws Throwable {
                     // TODO: la suite du protocole pour un INVOKE, en particulier lui passer objectId et le nom de méthode
-                    out.writeObject(RemoteContainerServer.RemoteCommand.INVOKE);
-                    //(...)                    
-
+                    out.writeObject(RemoteContainerServer.RemoteCommand.INVOKE);           
+                    out.writeInt(objectId);
+                    out.writeObject(method.getName());
                     if (parameters == null) {
                         out.writeInt(0);
                     } else {
                         out.writeInt(parameters.length);
-                        for (Class<?> type : method.getParameterTypes()) {
-                            out.writeObject(type.getName());
+                        
+                        for (int j=0 ; j < parameters.length ; j++ ) {
+                            if (parameters[j] != null){
+                            System.out.println(parameters[j].getClass().toString().substring(6));
+                            out.writeObject(parameters[j].getClass().toString().substring(6));}
                         }
-                        // TODO: ecrire les valeurs des parametres
-                     
+                        
+                        for (int j=0 ; j < parameters.length ; j++ ) {
+                            if (parameters[j] != null) {
+                             System.out.println(parameters[j].toString());
+                            out.writeObject(parameters[j].toString());}
+                        }
+                        
                     }
                     out.flush();
+                    
                     return in.readObject();
-                }
+                } 
             };
-
+            
+            System.out.println("3");
             // Fabrique un proxy sur l'interface interfaceClass
             return (T) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{interfaceClass}, handler);
 

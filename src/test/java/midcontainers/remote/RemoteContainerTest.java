@@ -111,30 +111,30 @@ public class RemoteContainerTest {
         
         assertThat(echo.echo("hello"), is("[ hello ]"));
 
-//        Echo echoShared1 = client.obtainReference(Echo.class, "shared");
-//        Echo echoShared2 = client.obtainReference(Echo.class, "shared");
-//        assertThat(echoShared1, not(sameInstance(echoShared2)));
-//        assertThat(echoShared1.echo("hello"), is("[ hello ]"));
-//        assertThat(echoShared2.echo("hello"), is("[ hello ]"));
-//
-//        server.declare(new Binding(Counter.class, SomeCounter.class, null, SINGLETON));
-//        server.declare(new Binding(Counter.class, SomeCounter.class, "private", NEW));
-//
-//        Counter c1 = client.obtainReference(Counter.class);
-//        Counter c2 = client.obtainReference(Counter.class);
-//        c1.increment();
-//        c1.increment();
-//        c2.increment();
-//        assertThat(c1.get(), is(3));
-//        assertThat(c2.get(), is(3));
-//
-//        c1 = client.obtainReference(Counter.class, "private");
-//        c2 = client.obtainReference(Counter.class, "private");
-//        c1.increment();
-//        c1.increment();
-//        c2.increment();
-//        assertThat(c1.get(), is(2));
-//        assertThat(c2.get(), is(1));
+        Echo echoShared1 = client.obtainReference(Echo.class, "shared");
+        Echo echoShared2 = client.obtainReference(Echo.class, "shared");
+        assertThat(echoShared1, not(sameInstance(echoShared2)));
+        assertThat(echoShared1.echo("hello"), is("[ hello ]"));
+        assertThat(echoShared2.echo("hello"), is("[ hello ]"));
+
+        server.declare(new Binding(Counter.class, SomeCounter.class, null, SINGLETON));
+        server.declare(new Binding(Counter.class, SomeCounter.class, "private", NEW));
+
+        Counter c1 = client.obtainReference(Counter.class);
+        Counter c2 = client.obtainReference(Counter.class);
+        c1.increment();
+        c1.increment();
+        c2.increment();
+        assertThat(c1.get(), is(3));
+        assertThat(c2.get(), is(3));
+
+        c1 = client.obtainReference(Counter.class, "private");
+        c2 = client.obtainReference(Counter.class, "private");
+        c1.increment();
+        c1.increment();
+        c2.increment();
+        assertThat(c1.get(), is(2));
+        assertThat(c2.get(), is(1));
 
         server.stop();
     }
