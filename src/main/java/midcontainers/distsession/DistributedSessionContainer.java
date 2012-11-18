@@ -23,7 +23,7 @@ import static midcontainers.Binding.Policy.SINGLETON;
  */
 
 public class DistributedSessionContainer extends LocalContainer {
-    
+    public ListenThread thread ;
     private final SessionContainer mySession;
     private final MulticastSocket socket;
     private final InetAddress group;     
@@ -46,6 +46,7 @@ public class DistributedSessionContainer extends LocalContainer {
             System.out.println("1");
             DatagramPacket inPacket = new DatagramPacket(incomingBuffer, incomingBuffer.length);
             socket.receive(inPacket);
+ 
             Serializable[] command = decode(inPacket.getData(), 3);
 
             switch ((SessionCommand) command[0]) {
@@ -62,7 +63,8 @@ public class DistributedSessionContainer extends LocalContainer {
                 case SYNC:
                    System.out.println("SYNC"); 
                    for (String key : new HashSet<String>(mySession.session.keySet())) {
-                        send(SessionCommand.SET, key, mySession.get(key));
+                        System.out.println("2");
+                        DistributedSessionContainer.this.send(SessionCommand.SET, key, mySession.get(key));
                     }
                     break;
             }
@@ -92,7 +94,7 @@ public class DistributedSessionContainer extends LocalContainer {
 
     public void send(SessionCommand command, String key, Serializable value) {      
         byte[] bytes = encode(command, key, value);                                  
-        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, group, port);
+        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, this.group, this.port);
         try {                                                                        
             socket.send(packet);                                                     
         } catch (IOException e) {                                                    
@@ -119,8 +121,8 @@ public class DistributedSessionContainer extends LocalContainer {
     public void start() {                    
     try {                      
      socket.joinGroup(group);
+     this.thread.start();
      send(SessionCommand.SYNC,null,null);
-     new ListenThread().start();
         } catch (IOException e) {            
      throw new ContainerException(e); 
         }                                    
@@ -137,6 +139,7 @@ public class DistributedSessionContainer extends LocalContainer {
     public DistributedSessionContainer(String groupAddress, int port) {
         try {       
             this.mySession = new SessionContainer();
+            this.thread = new ListenThread();
             this.groupAddress = groupAddress;                          
             this.port = port;                                          
             this.group = InetAddress.getByName(groupAddress);          
@@ -153,13 +156,13 @@ public class DistributedSessionContainer extends LocalContainer {
     }
     
     
-    public class SessionContainer implements Session {
+    public final class SessionContainer implements Session {
         
         private final Map<String, Serializable> session = new HashMap<String, Serializable>();
         
         public SessionContainer() {
-           
-        }
+
+           }
 
         public Serializable get(String key) {
         
@@ -175,9 +178,9 @@ public class DistributedSessionContainer extends LocalContainer {
 
         public void set(String key, Serializable value) {
             this.session.put(key, value);
-            DistributedSessionContainer.this.send(SessionCommand.SET, key, value);
+                DistributedSessionContainer.this.send(SessionCommand.SET, key, value);
 
-            }
         }
+    }
         
 }

@@ -26,17 +26,11 @@ public class RemoteContainerClient implements Container {
     
     private final ObjectInputStream in;
     private final ObjectOutputStream out;
-    public static enum RemoteCommand {
-        CHECK_REFERENCE,
-        CHECK_DEFINITION,
-        GET_REFERENCE,
-        GET_DEFINITION,
-        INVOKE
-    }
+
     
     public RemoteContainerClient(String host, int port) {           
         try {                                                       
-            Socket socket = new Socket(host, port);                 
+            Socket socket = new Socket(host, port);                               
             // /!\ ORDER MATTERS OR YOU DEADLOCK /!\                
             out = new ObjectOutputStream(socket.getOutputStream()); 
             in = new ObjectInputStream(socket.getInputStream());    
@@ -61,7 +55,7 @@ public class RemoteContainerClient implements Container {
     
     public boolean hasReferenceDeclaredFor(Class<?> interfaceClass, String qualifier) {
         try {                                                                          
-            out.writeObject(RemoteCommand.CHECK_REFERENCE);                                          
+            out.writeObject(RemoteContainerServer.RemoteCommand.CHECK_REFERENCE);                                          
             out.writeObject(interfaceClass.getName());                                 
             out.writeObject(qualifier);                                                
             out.flush();                                                               
@@ -81,7 +75,7 @@ public class RemoteContainerClient implements Container {
 
     public Object definitionValue(String name) {
         try {                                   
-            out.writeObject(RemoteCommand.GET_DEFINITION);    
+            out.writeObject(RemoteContainerServer.RemoteCommand.GET_DEFINITION);    
             out.writeObject(name);              
             out.flush();                        
             return in.readObject();             
@@ -100,7 +94,7 @@ public class RemoteContainerClient implements Container {
     public <T> T obtainReference(Class<T> interfaceClass, String qualifier) {
         try {
 
-            out.writeObject(RemoteCommand.GET_REFERENCE);
+            out.writeObject(RemoteContainerServer.RemoteCommand.GET_REFERENCE);
             out.writeObject(interfaceClass.getName());
             out.writeObject(qualifier);
             out.flush();
@@ -109,7 +103,7 @@ public class RemoteContainerClient implements Container {
             InvocationHandler handler = new InvocationHandler() {
                 public Object invoke(Object proxy, Method method, Object[] parameters) throws Throwable {
                     // TODO: la suite du protocole pour un INVOKE, en particulier lui passer objectId et le nom de méthode
-                    out.writeObject(RemoteCommand.INVOKE);
+                    out.writeObject(RemoteContainerServer.RemoteCommand.INVOKE);
                     //(...)                    
 
                     if (parameters == null) {
@@ -139,7 +133,18 @@ public class RemoteContainerClient implements Container {
     
      public boolean hasValueDefinedFor(String name) {
          
-       return true;
-       
+               try {          
+            
+            out.writeObject(RemoteContainerServer.RemoteCommand.CHECK_DEFINITION);    
+            out.writeObject(name);                     
+            out.flush();                        
+           return (Boolean)in.readObject();   
+            
+        } catch (IOException e) {               
+            throw new ContainerException(e);  
+        } catch (ClassNotFoundException e) {    
+            throw new ContainerException(e);    
+        }    
+//        return true;
      }
 }

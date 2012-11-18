@@ -24,7 +24,7 @@ public class RemoteContainerServer extends LocalContainer {
     private final ServerSocket serverSocket;
     private final int port;
     private final AtomicBoolean running = new AtomicBoolean(false);
-    public static enum RemoteCommand {
+    public static enum RemoteCommand implements Serializable{
         CHECK_REFERENCE,
         CHECK_DEFINITION,
         GET_REFERENCE,
@@ -56,12 +56,26 @@ public class RemoteContainerServer extends LocalContainer {
         acceptingThread.start();                           
     }
     
+    public void stop() {
+        try {
+            
+            running.set(false);
+            serverSocket.close();
+        
+         
+        } catch (IOException e) {
+            throw new ContainerException(e);  
+        }
+    }
+       
+    
     private final Thread acceptingThread = new Thread() {
         public void run() {
             while (running.get()) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    new Worker(clientSocket).start();
+                    RemoteContainerServer.Worker workerThread = new Worker(clientSocket);
+                    workerThread.start();
                 } catch (SocketTimeoutException ignored) {
                 } catch (IOException e) {
                     throw new ContainerException(e);
@@ -75,32 +89,43 @@ public class RemoteContainerServer extends LocalContainer {
     private int clientObjectsCounter = 0;
     private final Map<Integer, Object> clientObjects = new HashMap<Integer, Object>();
 
+    
     public Worker(Socket socket) {
         this.socket = socket;
     }
 
     public void run() {
         try {
+
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
             
             while (running.get()) {
-               RemoteCommand command = (RemoteCommand) in.readObject();
+                System.out.println("1");
+                serverSocket.close();
+                RemoteCommand command = (RemoteCommand)in.readObject();
+                System.out.println("2");
                 switch (command) {
 
                     case CHECK_DEFINITION:
-                        
-                       String name = (String) in.readObject();
+//                      System.out.println("Check_Def");
+                        String name = (String) in.readObject();
                         out.writeObject(hasValueDefinedFor(name));
                         out.flush();
                         break;
 
                     case CHECK_REFERENCE:
-                        // (...)
+//                      System.out.println("Check_Ref");
+                        Class<?> readClass = (Class<?>) Class.forName((String)in.readObject()) ;
+                        String readQualifier = (String) in.readObject();
+                        out.writeObject(hasReferenceDeclaredFor(readClass, readQualifier));
+                        out.flush();
                         break;
-
+                      
                     case GET_DEFINITION:
-                        // (...)
+                        
+                        String key = (String) in.readObject();
+                        out.writeObject(definitionValue(key));
                         break;
 
                     case GET_REFERENCE:
@@ -132,7 +157,9 @@ public class RemoteContainerServer extends LocalContainer {
                         out.flush();
                         break;
                 }
+               
             }
+           
         } catch (IOException e) {
             throw new ContainerException(e);
         } catch (ClassNotFoundException e) {
@@ -144,6 +171,9 @@ public class RemoteContainerServer extends LocalContainer {
         } catch (IllegalAccessException e) {
             throw new ContainerException(e);
         }
+    }
+    public void arret() {
+        
     }
 }
 }

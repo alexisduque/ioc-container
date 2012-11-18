@@ -34,65 +34,65 @@ import static org.junit.Assert.fail;
 
 public class RemoteContainerTest {
 
-//    @Test
-//    public void smoke_test() {
-//        RemoteContainerServer server = new RemoteContainerServer(1981);
-//        server.start();
-//        server.stop();
-//    }
+    @Test
+    public void smoke_test() {
+        RemoteContainerServer server = new RemoteContainerServer(1981);
+        server.start();
+        server.stop();
+    }
+
+    @Test
+    public void check_unsupported_operations() {
+        RemoteContainerServer server = new RemoteContainerServer(1982);
+        server.start();
+        RemoteContainerClient client = new RemoteContainerClient("127.0.0.1", 1982);
+
+        try {
+            client.declare(new Binding(List.class, LinkedList.class, null, NEW));
+            fail("The operation should not be supported");
+        } catch (UnsupportedOperationException ignored) {
+        }
 //
-//    @Test
-//    public void check_unsupported_operations() {
-//        RemoteContainerServer server = new RemoteContainerServer(1982);
-//        server.start();
-//        RemoteContainerClient client = new RemoteContainerClient("127.0.0.1", 1982);
-//
-//        try {
-//            client.declare(new Binding(List.class, LinkedList.class, null, NEW));
-//            fail("The operation should not be supported");
-//        } catch (UnsupportedOperationException ignored) {
-//        }
-//
-//        try {
-//            client.define("foo", "bar");
-//            fail("The operation should not be supported");
-//        } catch (UnsupportedOperationException ignored) {
-//        }
-//
-//        try {
-//            client.delegateTo(new LocalContainer());
-//            fail("The operation should not be supported");
-//        } catch (UnsupportedOperationException ignored) {
-//        }
-//
-//        server.stop();
-//    }
-//
-//    @Test
-//    public void check_query_operations() {
-//        RemoteContainerServer server = new RemoteContainerServer(1983);
-//        server
-//                .define("hello", "world")
-//                .declare(new Binding(List.class, LinkedList.class, null, NEW));
-//
-//        server.start();
-//        RemoteContainerClient client = new RemoteContainerClient("127.0.0.1", 1983);
-//
-//        boolean query = client.hasValueDefinedFor("hello");
-//        assertThat(query, is(true));
-//        query = client.hasValueDefinedFor("foo");
-//        assertThat(query, is(false));
-//
-//        query = client.hasReferenceDeclaredFor(List.class, null);
-//        assertThat(query, is(true));
-//        query = client.hasReferenceDeclaredFor(Set.class, null);
-//        assertThat(query, is(false));
-//
-//        assertThat((String) client.definitionValue("hello"), is("world"));
-//
-//        server.stop();
-//    }
-//
+        try {
+            client.define("foo", "bar");
+            fail("The operation should not be supported");
+        } catch (UnsupportedOperationException ignored) {
+        }
+
+        try {
+            client.delegateTo(new LocalContainer());
+            fail("The operation should not be supported");
+        } catch (UnsupportedOperationException ignored) {
+        }
+
+        server.stop();
+    }
+
+    @Test
+    public void check_query_operations() {
+        RemoteContainerServer server = new RemoteContainerServer(1983);
+        server
+                .define("hello", "world")
+                .declare(new Binding(List.class, LinkedList.class, null, NEW));
+
+        server.start();
+        RemoteContainerClient client = new RemoteContainerClient("127.0.0.1", 1983);
+
+        boolean query = client.hasValueDefinedFor("hello");
+        assertThat(query, is(true));
+        query = client.hasValueDefinedFor("foo");
+        assertThat(query, is(false));
+
+        query = client.hasReferenceDeclaredFor(List.class, null);
+        assertThat(query, is(true));
+        query = client.hasReferenceDeclaredFor(Set.class, null);
+        assertThat(query, is(false));
+
+        assertThat((String) client.definitionValue("hello"), is("world"));
+
+        server.stop();
+    }
+
 //    @Test
 //    public void check_remote_operations() {
 //        RemoteContainerServer server = new RemoteContainerServer(1984);
