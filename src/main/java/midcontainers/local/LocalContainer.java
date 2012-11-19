@@ -88,7 +88,7 @@ public class LocalContainer implements Container {
         } else {
             T res = null;
             Class<?> implClass = bind.getImplementationClass();
-            Constructor<?>[] constructors = implClass.getDeclaredConstructors();
+            Constructor<?>[] constructors = implClass.getConstructors();
             for (int i = 0; i < constructors.length; i++) {
                 
                 Class<?>[] paramType = constructors[i].getParameterTypes();
@@ -115,10 +115,10 @@ public class LocalContainer implements Container {
                 
                 try {
                     if (bind.getPolicy() == Binding.Policy.SINGLETON) {
-                        if ( singletons.containsKey(bind.getKey()) == false) {
-                            singletons.put(bind.getKey(), (T) constructors[i].newInstance(parameterValue));
+                        if ( this.singletons.containsKey(bind.getKey()) == false) {
+                            this.singletons.put(bind.getKey(), (T) constructors[i].newInstance(parameterValue));
                         }
-                        return (T) singletons.get(bind.getKey());   
+                        return (T) this.singletons.get(bind.getKey());   
                     } 
                 return res = (T) constructors[i].newInstance(parameterValue);
                 }    
