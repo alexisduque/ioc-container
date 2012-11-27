@@ -19,7 +19,7 @@ public class LocalContainer implements Container {
     protected final Map<Binding.Key, Object> singletons = new HashMap<Binding.Key, Object>();
     private final List<Container> delegates = new LinkedList<Container>();
 
-    /* Definition */
+
     public Container define(String name, Object value) {
         this.definitions.put(name, value);
         return this;
@@ -35,7 +35,6 @@ public class LocalContainer implements Container {
         throw new ContainerException("No value for this name");
     }
 
-    /* Bindings */
     public Container declare(Binding binding) {
         this.bindings.put(binding.getKey(), binding);
         return this;
@@ -47,9 +46,9 @@ public class LocalContainer implements Container {
 
     public <T> T obtainReference(Class<T> interfaceClass, String qualifier) {
         
-        // Get the correct binding
+       
         Binding binding = this.bindings.get(new Binding.Key(interfaceClass, qualifier));
-        // If we don't know how to instanciate, try the delegates
+        // Try delegate if no binding found
         if (binding == null) {
             for (Container delegate : delegates) {
                 if (delegate.hasReferenceDeclaredFor(interfaceClass, qualifier)) {
@@ -57,21 +56,22 @@ public class LocalContainer implements Container {
                     return reference;
                 }
             }
-        // If they can't instanciate, fail
+       
         throw new ContainerException("No binding for this Interface");
         }
 
-        // We now how to instanciate: we have the correct binding
+        //Binding found
 
-        // Check policy: if singleton try to return the existing reference
+        
         if (binding.getPolicy() == Binding.Policy.SINGLETON && this.singletons.get(binding.getKey()) != null)
         return (T) this.singletons.get(binding.getKey());
 
-        // Instanciate the object
+        
         Class implementationClass = binding.getImplementationClass();
         for (Constructor constructor : implementationClass.getConstructors()) {
             try {
-                // Injection of constructor values
+                
+                // Try injecting constructor values
                 Annotation[][] annotations = constructor.getParameterAnnotations();
                 Class<?>[] argsTypes = constructor.getParameterTypes();
                 Object[] args = new Object[argsTypes.length];
@@ -91,11 +91,11 @@ public class LocalContainer implements Container {
             } catch (Exception ignored) { System.out.println(ignored.getMessage()); }
         }
 
-        // If we can't instanciate, fail
+        // Can't instanciate
         throw new ContainerException("Failed to obtain reference for this interface");
     }
 
-    /* Delegation */
+
     public boolean hasReferenceDeclaredFor(Class<?> interfaceClass) {
         return this.hasReferenceDeclaredFor(interfaceClass, null);
     }

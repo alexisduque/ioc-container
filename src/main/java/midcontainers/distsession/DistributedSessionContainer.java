@@ -86,7 +86,6 @@ public class DistributedSessionContainer extends LocalContainer {
         
             while(running.get()) {
                 try {
-                System.out.println("1");
 
                 socket.receive(inPacket);
 
@@ -100,6 +99,7 @@ public class DistributedSessionContainer extends LocalContainer {
                         break;
 
                     case DELETE:
+                        System.out.println("DELETE"); 
                         session.deleteMe((String)command[1]);
                         break;
 
