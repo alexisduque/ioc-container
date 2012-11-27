@@ -28,52 +28,52 @@ import static org.junit.Assert.assertThat;
 
 public class DistributedSessionContainerTest {
 
-//    private static final int SLEEP_DELAY = 250;
-//
-//    @Test
-//    public void check_local_session() {
-//        DistributedSessionContainer container = new DistributedSessionContainer("228.5.6.7", 8666);
-//        container.start();
-//
-//        Session session = container.obtainReference(Session.class);
-//        assertThat(session.get("foo"), nullValue());
-//        session.set("foo", "bar");
-//        assertThat((String) session.get("foo"), is("bar"));
-//        session.delete("foo");
-//        assertThat(session.get("foo"), nullValue());
-//
-//        container.stop();
-//    }
+    private static final int SLEEP_DELAY = 250;
 
-//   @Test
-//    public void check_distributed_session() throws InterruptedException {
-//        DistributedSessionContainer container1 = new DistributedSessionContainer("228.5.6.7", 8666);
-//        DistributedSessionContainer container2 = new DistributedSessionContainer("228.5.6.7", 8666);
-//        container1.start();
-//        container2.start();
-//
-//        Session session1 = container1.obtainReference(Session.class);
-//        session1.set("hello", "world");
-//        Session session2 = container2.obtainReference(Session.class);
+    @Test
+    public void check_local_session() {
+        DistributedSessionContainer container = new DistributedSessionContainer("228.5.6.7", 8666);
+        container.start();
+
+        Session session = container.obtainReference(Session.class);
+        assertThat(session.get("foo"), nullValue());
+        session.set("foo", "bar");
+        assertThat((String) session.get("foo"), is("bar"));
+        session.delete("foo");
+        assertThat(session.get("foo"), nullValue());
+
+        container.stop();
+    }
+
+   @Test
+    public void check_distributed_session() throws InterruptedException {
+        DistributedSessionContainer container1 = new DistributedSessionContainer("228.5.6.7", 8666);
+        DistributedSessionContainer container2 = new DistributedSessionContainer("228.5.6.7", 8666);
+        container1.start();
+        container2.start();
+
+        Session session1 = container1.obtainReference(Session.class);
+        session1.set("hello", "world");
+        Session session2 = container2.obtainReference(Session.class);
 
         
-//        session1.set("foo", "bar");
-//
-//        Thread.sleep(SLEEP_DELAY);
-//
-//        assertThat((String) session2.get("hello"), is("world"));
-//        assertThat((String) session2.get("foo"), is("bar"));
-//
-//        session2.delete("foo");
-//
-//        Thread.sleep(SLEEP_DELAY);
-//
-//        assertThat((String) session1.get("foo"), nullValue());
-//
-//        container1.stop();
-//        container2.stop();
-//    }
-//
+        session1.set("foo", "bar");
+
+        Thread.sleep(SLEEP_DELAY);
+        assertThat((String) session1.get("hello"), is("world"));
+        assertThat((String) session2.get("hello"), is("world"));
+        assertThat((String) session2.get("foo"), is("bar"));
+
+        session2.delete("foo");
+
+        Thread.sleep(SLEEP_DELAY);
+
+        assertThat((String) session1.get("foo"), nullValue());
+
+        container1.stop();
+        container2.stop();
+    }
+
 //    @Test
 //    public void check_assembly() throws InterruptedException {
 //        DistributedSessionContainer distContainer1 = new DistributedSessionContainer("228.5.6.7", 8666);

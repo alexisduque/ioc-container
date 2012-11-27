@@ -16,14 +16,56 @@ import midcontainers.Named;
 import midcontainers.local.LocalContainer;
 import static midcontainers.Binding.Policy.NEW;
 import static midcontainers.Binding.Policy.SINGLETON;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 /**
  *
  * @author alexis
  */
 
 public class DistributedSessionContainer extends LocalContainer {
-    public ListenThread thread ;
+    
+    public class SessionContainer implements Session {
+        
+        private final Map<String, Serializable> session = new HashMap<String, Serializable>();
+
+        public Serializable get(String key) {
+        
+         return this.session.get(key);
+       
+        }
+
+        public void delete(String key) {
+            this.session.remove(key);
+            DistributedSessionContainer.this.send(DistributedSessionContainer.SessionCommand.DELETE, key, null);
+        }
+
+
+        public void set(String key, Serializable value) {
+            this.session.put(key, value);
+            send(DistributedSessionContainer.SessionCommand.SET, key, value);
+          
+        }
+        
+        public void deleteMe(String key) {
+            this.session.remove(key);
+           
+        }
+
+
+        public void setMe (String key, Serializable value) {
+            this.session.put(key, value);
+
+        }
+        
+        public void sync(){
+            for (Map.Entry<String, Serializable> entry : session.entrySet()){
+                send(SessionCommand.SET,entry.getKey(), entry.getValue());
+            }
+        }
+        
+    }
+    private final AtomicBoolean running = new AtomicBoolean(false);
+    private ListenThread thread ;
     private final SessionContainer mySession;
     private final MulticastSocket socket;
     private final InetAddress group;     
@@ -32,46 +74,43 @@ public class DistributedSessionContainer extends LocalContainer {
     private static final int BUFFER_SIZE = 8192;
     private final byte[] incomingBuffer = new byte[BUFFER_SIZE];
     private final ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream(BUFFER_SIZE);
+    
     public static enum SessionCommand {
     SYNC, SET, DELETE
     }
     
     public class ListenThread extends Thread {
-
+        DatagramPacket inPacket = new DatagramPacket(incomingBuffer, incomingBuffer.length);
+        SessionContainer session = (SessionContainer) DistributedSessionContainer.this.obtainReference(Session.class);
+        public void run() {
         
-    public void run() {
-        
-        while(true) {
-            try {
-            System.out.println("1");
-            DatagramPacket inPacket = new DatagramPacket(incomingBuffer, incomingBuffer.length);
-            socket.receive(inPacket);
- 
-            Serializable[] command = decode(inPacket.getData(), 3);
+            while(running.get()) {
+                try {
+                System.out.println("1");
 
-            switch ((SessionCommand) command[0]) {
-                case SET:
-                    System.out.println("SET");
-                    mySession.set((String)command[1],command[2]);
-                    
-                    break;
+                socket.receive(inPacket);
 
-                case DELETE:
-                    mySession.delete((String)command[1]);
-                    break;
+                Serializable[] command = decode(inPacket.getData(), 3);
 
-                case SYNC:
-                   System.out.println("SYNC"); 
-                   for (String key : new HashSet<String>(mySession.session.keySet())) {
-                        System.out.println("2");
-                        DistributedSessionContainer.this.send(SessionCommand.SET, key, mySession.get(key));
-                    }
-                    break;
-            }
-            
-            } catch (IOException e) {
-            }
-            
+                switch ((SessionCommand) command[0]) {
+                    case SET:
+                        System.out.println("SET");
+                        session.setMe((String)command[1],command[2]);
+
+                        break;
+
+                    case DELETE:
+                        session.deleteMe((String)command[1]);
+                        break;
+
+                    case SYNC:
+                       System.out.println("SYNC"); 
+                       session.sync();
+                }
+
+                } catch (IOException e) {
+                }
+
             }
         }
      }
@@ -92,7 +131,7 @@ public class DistributedSessionContainer extends LocalContainer {
         }                                                                                     
     }
 
-    public void send(SessionCommand command, String key, Serializable value) {      
+    private void send(SessionCommand command, String key, Serializable value) {      
         byte[] bytes = encode(command, key, value);                                  
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, this.group, this.port);
         try {                                                                        
@@ -121,7 +160,9 @@ public class DistributedSessionContainer extends LocalContainer {
     public void start() {                    
     try {                      
      socket.joinGroup(group);
-     this.thread.start();
+     this.running.set(true);
+   
+     thread.start();
      send(SessionCommand.SYNC,null,null);
         } catch (IOException e) {            
      throw new ContainerException(e); 
@@ -129,8 +170,9 @@ public class DistributedSessionContainer extends LocalContainer {
     }      
 
     public void stop() {                                 
-        try {                               
-        socket.leaveGroup(group);       
+        try {                 
+        socket.leaveGroup(group);   
+        this.running.set(true);
         } catch (IOException e) {           
             throw new ContainerException(e);
         }
@@ -139,14 +181,15 @@ public class DistributedSessionContainer extends LocalContainer {
     public DistributedSessionContainer(String groupAddress, int port) {
         try {       
             this.mySession = new SessionContainer();
-            this.thread = new ListenThread();
             this.groupAddress = groupAddress;                          
             this.port = port;                                          
             this.group = InetAddress.getByName(groupAddress);          
             socket = new MulticastSocket(port);                        
-            socket.setSoTimeout(10000);       
-            this.declare(new Binding(Session.class, SessionContainer.class, null, SINGLETON));
-            
+            socket.setSoTimeout(10000);     
+            Binding b = new Binding(Session.class, SessionContainer.class, null, SINGLETON);
+            this.declare(b);
+            this.singletons.put(b.getKey(), new SessionContainer() );
+            this.thread = new ListenThread();
            
         } catch (UnknownHostException e) {                             
             throw new ContainerException(e);                           
@@ -155,32 +198,7 @@ public class DistributedSessionContainer extends LocalContainer {
         }                                                              
     }
     
+
     
-    public final class SessionContainer implements Session {
-        
-        private final Map<String, Serializable> session = new HashMap<String, Serializable>();
-        
-        public SessionContainer() {
-
-           }
-
-        public Serializable get(String key) {
-        
-         return this.session.get(key);
-       
-        }
-
-        public void delete(String key) {
-            this.session.remove(key);
-            DistributedSessionContainer.this.send(SessionCommand.DELETE, key, null);
-        }
-
-
-        public void set(String key, Serializable value) {
-            this.session.put(key, value);
-                DistributedSessionContainer.this.send(SessionCommand.SET, key, value);
-
-        }
-    }
         
 }

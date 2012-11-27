@@ -13,6 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.annotation.Annotation;
 
 public class LocalContainer implements Container {
+    
     private final Map<String, Object> definitions = new HashMap<String, Object>();
     private final Map<Binding.Key, Binding> bindings = new HashMap<Binding.Key, Binding>();
     protected final Map<Binding.Key, Object> singletons = new HashMap<Binding.Key, Object>();
@@ -20,8 +21,8 @@ public class LocalContainer implements Container {
 
     /* Definition */
     public Container define(String name, Object value) {
-    this.definitions.put(name, value);
-    return this;
+        this.definitions.put(name, value);
+        return this;
     }
 
     public Object definitionValue(String name) {
@@ -36,8 +37,8 @@ public class LocalContainer implements Container {
 
     /* Bindings */
     public Container declare(Binding binding) {
-    this.bindings.put(binding.getKey(), binding);
-    return this;
+        this.bindings.put(binding.getKey(), binding);
+        return this;
     }
 
     public <T> T obtainReference(Class<T> interfaceClass) {
@@ -45,6 +46,7 @@ public class LocalContainer implements Container {
     }
 
     public <T> T obtainReference(Class<T> interfaceClass, String qualifier) {
+        
         // Get the correct binding
         Binding binding = this.bindings.get(new Binding.Key(interfaceClass, qualifier));
         // If we don't know how to instanciate, try the delegates

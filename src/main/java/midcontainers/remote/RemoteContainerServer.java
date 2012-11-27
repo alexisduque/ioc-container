@@ -102,7 +102,8 @@ public class RemoteContainerServer extends LocalContainer {
             
             while (running.get()) {
                 //System.out.println("1");
-                serverSocket.close();
+                //serverSocket.close();
+                String qualifier;
                 RemoteCommand command = (RemoteCommand)in.readObject();
                 //System.out.println("2");
                 switch (command) {
@@ -116,9 +117,9 @@ public class RemoteContainerServer extends LocalContainer {
 
                     case CHECK_REFERENCE:
 //                      System.out.println("Check_Ref");
-                        Class<?> readClass = (Class<?>) Class.forName((String)in.readObject()) ;
-                        String readQualifier = (String) in.readObject();
-                        out.writeObject(hasReferenceDeclaredFor(readClass, readQualifier));
+                        name = (String) in.readObject();
+                        qualifier = (String) in.readObject();
+                        out.writeObject(hasReferenceDeclaredFor(Class.forName(name),qualifier));
                         out.flush();
                         break;
                       
@@ -130,7 +131,7 @@ public class RemoteContainerServer extends LocalContainer {
 
                     case GET_REFERENCE:
                         name = (String) in.readObject();
-                        String qualifier = (String) in.readObject();
+                        qualifier = (String) in.readObject();
                         Object instance = obtainReference(Class.forName(name), qualifier);
                         clientObjects.put(clientObjectsCounter, instance);
                         out.writeObject(clientObjectsCounter);
